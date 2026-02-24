@@ -1,0 +1,435 @@
+Entity ID,SKU,Error
+1083,PTZ-0290,Configurable product has no valid children
+1097,SRO-0027,Configurable product has no valid children
+1113,WCO-0190,Configurable product has no valid children
+2921,BDI-0692,Configurable product has no valid children
+3073,MET-0015,Configurable product has no valid children
+3140,RON-0005,Configurable product has no valid children
+3233,VAL-0022,Configurable product has no valid children
+3418,CMP-0113,Configurable product has no valid children
+4368,LSP-0023,Configurable product has no valid children
+6973,ABC-0051,Too many connections
+6989,TRG-0080,Too many connections
+6993,TRG-0071,Too many connections
+7005,CMP-0135,Too many connections
+7016,CMP-0136,Configurable product has no valid children
+7018,BDI-0053,Configurable product has no valid children
+7022,SMC-0004,Configurable product has no valid children
+7023,PTZ-0244,Too many connections
+7028,PTZ-0271,Too many connections
+7030,BDI-0052,Too many connections
+7035,CSN-0002,Too many connections
+7039,TRG-0006,Too many connections
+7048,BDI-0668,Too many connections
+7051,BLU-0077,Too many connections
+7052,BLU-0078,Too many connections
+7081,CMP-0008,Too many connections
+7083,CMP-0013,Too many connections
+7085,CMP-0161,Too many connections
+7086,EDR-0037,Too many connections
+7091,LIB-0056,Configurable product has no valid children
+7095,PTZ-0317,Too many connections
+7096,PTZ-0318,Too many connections
+7178,BDI-0734,Too many connections
+7193,BDI-0732,Too many connections
+7246,BDI-0727,Too many connections
+7267,BDI-0728,Too many connections
+7306,BDI-0733,Too many connections
+7340,PTZ-0375,Configurable product has no valid children
+7350,PTZ-0385,Too many connections
+7361,LSP-0135,Too many connections
+7385,PTZ-0393,Too many connections
+7397,LSP-0136,Too many connections
+7398,LSP-0137,Too many connections
+7451,LSP-0132,Too many connections
+7477,PTZ-0373,Too many connections
+7486,BDI-0731,Too many connections
+7502,BDI-0726,Too many connections
+7507,BDI-0730,Too many connections
+7523,LSP-0133,Too many connections
+7545,LSP-0134,Too many connections
+7571,BDI-0736,Too many connections
+7603,BDI-0735,Too many connections
+7677,BDI-0725,Too many connections
+7678,BDI-0738,Too many connections
+7680,MET-0404,Too many connections
+7681,MET-0405,Too many connections
+7682,MET-0406,Too many connections
+7683,MET-0408,Too many connections
+7684,MET-0409,Too many connections
+7686,PTZ-0397,Too many connections
+7760,BDI-0709,Too many connections
+7761,BDI-0710,Too many connections
+7762,BDI-0711,Too many connections
+7793,BDI-0714,Too many connections
+7794,BDI-0715,Too many connections
+7795,BDI-0716,Too many connections
+7796,BDI-0717,Too many connections
+7797,BDI-0718,Too many connections
+7819,PTZ-0374,Too many connections
+7940,LSP-0138,Too many connections
+7949,LSP-0139,Too many connections
+7958,LSP-0140,Too many connections
+7971,LSP-0141,Too many connections
+7985,LSP-0143,Too many connections
+7994,LSP-0144,Too many connections
+7999,LSP-0145,Too many connections
+8004,LSP-0146,Too many connections
+8013,LSP-0147,Too many connections
+8018,LSP-0148,Too many connections
+8023,LSP-0149,Too many connections
+8028,LSP-0150,Configurable product has no valid children
+8041,LSP-0151,Configurable product has no valid children
+8050,LSP-0152,Too many connections
+8063,LSP-0153,Configurable product has no valid children
+8077,LSP-0155,Too many connections
+8091,LSP-0157,Too many connections
+8104,LSP-0158,Too many connections
+8122,LSP-0160,Too many connections
+8131,LSP-0161,Too many connections
+8136,LSP-0162,Too many connections
+8150,LSP-0164,Too many connections
+8159,LSP-0165,Too many connections
+8164,LSP-0166,Too many connections
+8174,SCA-0002,Too many connections
+8175,SCA-0003,Too many connections
+8177,SCA-0005,Too many connections
+8179,SCA-0007,Too many connections
+8180,SCA-0008,Too many connections
+8182,SCA-0010,Too many connections
+8184,SCA-0012,Too many connections
+8186,SCA-0014,Too many connections
+8188,SCA-0016,Too many connections
+8222,SCA-0050,Configurable product has no valid children
+8236,SCA-0064,Too many connections
+9705,BDI-0600,Too many connections
+9820,LSP-0154,Too many connections
+9827,BDI-0741,Too many connections
+9828,WCO-0191,Too many connections
+9841,LSP-0156,Too many connections
+9855,PTZ-0409,Too many connections
+9856,PTZ-0410,Too many connections
+9857,PTZ-0411,Too many connections
+9858,PTZ-0412,Too many connections
+9859,PTZ-0413,Too many connections
+9860,PTZ-0418,Configurable product has no valid children
+9861,PTZ-0422,Too many connections
+9862,PTZ-0423,Too many connections
+9864,PTZ-0435,Too many connections
+9865,PTZ-0436,Too many connections
+9871,PTZ-0518,Too many connections
+9873,PTZ-0520,Too many connections
+9874,PTZ-0521,Too many connections
+10151,BEA-0098,Too many connections
+10154,BEA-0099,Too many connections
+10157,BEA-0100,Too many connections
+10160,BEA-0101,Too many connections
+10163,BEA-0102,Too many connections
+10166,BEA-0103,Too many connections
+10170,BEA-0104,Too many connections
+10184,BEA-0110,Too many connections
+10198,DMM-0235,Too many connections
+10239,EDL-0163,Too many connections
+10245,EDL-0165,Too many connections
+10249,EDL-0167,Too many connections
+10288,GRV-0201,Too many connections
+10292,GRV-0203,Too many connections
+10298,GRV-0205,Too many connections
+10303,KNG-0024,Too many connections
+10308,KNG-0025,Too many connections
+10311,KNG-0026,Too many connections
+10319,LIB-0166,Too many connections
+10325,LIB-0167,Too many connections
+10331,LIB-0168,Too many connections
+12342,PTZ-0571,Too many connections
+12347,LSP-0171,Too many connections
+12348,LSP-0172,Too many connections
+12349,LSP-0173,Too many connections
+12350,LSP-0174,Too many connections
+12351,LSP-0175,Too many connections
+12353,LSP-0177,Too many connections
+12354,LSP-0179,Too many connections
+12824,TNY-0001,Too many connections
+12825,TNY-0002,Too many connections
+12826,TNY-0003,Too many connections
+12828,SRO-0144,Too many connections
+12841,BDI-0096-Red2,Missing or zero price for simple product
+13220,LSP-0085,Configurable product has no valid children
+13281,LSP-0091,Too many connections
+14434,LSP-0197,Too many connections
+14435,RCH-0032,Too many connections
+14436,RCH-0033,Too many connections
+15157,BDI-0073-Deep_Torch-S/M,Missing or zero price for simple product
+15159,STR-0145-70M-Neon_Green-Dry,Missing or zero price for simple product
+15184,BDI-0833-Spect_Blue-S,Missing or zero price for simple product
+15185,BDI-0628-Matte_Blac,Missing or zero price for simple product
+15198,BLU-0029-FL/SP-60M-Double_Dry,Missing or zero price for simple product
+15200,BDI-0879-Deep_Torch-M/L,Missing or zero price for simple product
+15201,BDI-0790-Ultra_Blue-M/L,Missing or zero price for simple product
+15205,MET-0432-12_in,Missing or zero price for simple product
+15206,"STR-0125-24""_Yellow",Missing or zero price for simple product
+15224,PTZ-0374-Size_2-White,Missing or zero price for simple product
+15227,BDI-0878-Deep_Torch-M/L,Missing or zero price for simple product
+15230,PTZ-0617-Size_1,Missing or zero price for simple product
+15231,PTZ-0617-Size_2,Missing or zero price for simple product
+15236,"STR-0125-48""_Yellow",Missing or zero price for simple product
+15238,BLU-0120-20_in-Brown,Missing or zero price for simple product
+15239,BLU-0120-68_in-Blue,Missing or zero price for simple product
+15530,BDI-0826-Dark_Denim-S/M,Missing or zero price for simple product
+15544,TRG-0105-Mega_Rack_,Missing or zero price for simple product
+15545,BLU-0122-18_in-Yellow,Missing or zero price for simple product
+15546,BDI-0703-Fire_(Red),Missing or zero price for simple product
+15547,BLU-0122-18_in-Blue,Missing or zero price for simple product
+15548,DMM-0183-Gun_Metal,Missing or zero price for simple product
+15549,PTZ-0593-Size_1,Missing or zero price for simple product
+15557,PTZ-0590-Blue-Size_2,Missing or zero price for simple product
+15559,BLU-0120-11_in-Brown,Missing or zero price for simple product
+15560,BLU-0120-20_in-Blue,Missing or zero price for simple product
+15561,BLU-0121-18_in-Red,Missing or zero price for simple product
+15562,BDI-0527-Ultra_Blue-S/M,Missing or zero price for simple product
+15563,"MET-0337-10""_(25cm)",Missing or zero price for simple product
+15565,PTZ-0411-Size_1,Missing or zero price for simple product
+15570,BDI-0710-Repo_Black-S-M,Missing or zero price for simple product
+15588,DMM-0248-120_cm,Missing or zero price for simple product
+15589,DMM-0372-Green-18_cm,Missing or zero price for simple product
+15590,BDI-0969-12_cm,Missing or zero price for simple product
+15606,BDI-0709-Vapor_Gray-S-M,Missing or zero price for simple product
+15607,BLU-0121-18_in-Yellow,Missing or zero price for simple product
+15608,BDI-0969-18_cm,Missing or zero price for simple product
+15611,BDI-0711-Green_Sage-M-L,Missing or zero price for simple product
+15613,MET-0432-20_in,Missing or zero price for simple product
+15616,BDI-0968-Matte_Blac,Missing or zero price for simple product
+15620,BEA-0096-Pet_Blue-30M,Missing or zero price for simple product
+15622,PTZ-0590-Grey-Size_2,Missing or zero price for simple product
+15623,TRG-0105-Rack_Pack,Missing or zero price for simple product
+15630,EDL-0174-120_cm,Missing or zero price for simple product
+15631,BDI-0968-Powell_Blu,Missing or zero price for simple product
+15633,BDI-0711-Dark_Denim-S-M,Missing or zero price for simple product
+15635,PTZ-0590-White-Size_1,Missing or zero price for simple product
+15637,BDI-0067-Red_Clay-L,Missing or zero price for simple product
+15642,BDI-0976-12_cm,Missing or zero price for simple product
+15647,STR-0147-80M-Neon_Green-Dry,Missing or zero price for simple product
+15651,DMM-0238-12_cm,Missing or zero price for simple product
+15655,PTZ-0590-Red-Size_1,Missing or zero price for simple product
+15656,RAB-0091-Dark_shark-L,Missing or zero price for simple product
+15658,BEA-0107-75_cm,Missing or zero price for simple product
+15659,BDI-0073-Ultra_Blue-M/L,Missing or zero price for simple product
+15661,BDI-0830-Proc_Blue,Missing or zero price for simple product
+15663,PTZ-0642-Size_0,Missing or zero price for simple product
+15665,BLU-0122-24_in-Blue,Missing or zero price for simple product
+15667,BDI-0976-18_cm,Missing or zero price for simple product
+15671,BEA-0107-50_cm,Missing or zero price for simple product
+15672,CMP-0237-11_cm_5_Pk,Missing or zero price for simple product
+15674,BDI-0977-Eletric_Bl,Missing or zero price for simple product
+15676,BLU-0029-Blue/Red-60M-Double_Dry,Missing or zero price for simple product
+15677,BDI-0977-Coral_Pink,Missing or zero price for simple product
+15678,BDI-0073-Ultra_Blue-S/M,Missing or zero price for simple product
+15679,BDI-0703-Matte_Blac,Missing or zero price for simple product
+15680,PTZ-0601-Size_2,Missing or zero price for simple product
+15681,BDI-0958-18_cm,Missing or zero price for simple product
+15684,PTZ-0373-Size_2-Blue,Missing or zero price for simple product
+15685,BDI-0920-12_cm,Missing or zero price for simple product
+15686,BDI-0920-18_cm,Missing or zero price for simple product
+15689,GRV-0223-Cramp-O-Ma,Missing or zero price for simple product
+15695,PTZ-0601-Size_1,Missing or zero price for simple product
+15698,DMM-0212-Set_3-8,Missing or zero price for simple product
+15700,GRV-0227-Ice_Blade,Missing or zero price for simple product
+15783,CMP-0222-11_cm_5pk,Missing or zero price for simple product
+15786,TRG-0104-18_cm,Missing or zero price for simple product
+15787,BDI-0922-Matte_Blac,Missing or zero price for simple product
+15788,MET-0416-7_in,Missing or zero price for simple product
+16422,BDI-0751-Blazing_Yellow,Missing or zero price for simple product
+16423,BDI-0904-18_cm,Missing or zero price for simple product
+16426,BLU-0029-Blue/Red-70M-Double_Dry,Missing or zero price for simple product
+16448,DMM-0412-25_cm,Missing or zero price for simple product
+16449,PTZ-0370-Size_2-Yellow,Missing or zero price for simple product
+16467,LSP-0164-Ice_Blue-L,Missing or zero price for simple product
+16468,BDI-1000-Dual_Blue-35M,Missing or zero price for simple product
+16469,BDI-1000-Dual_Blue-40M,Missing or zero price for simple product
+16487,BLU-0120-11_in-Blue,Missing or zero price for simple product
+16488,BLU-0121-24_in-Red,Missing or zero price for simple product
+16490,BLU-0120-44_in-Blue,Missing or zero price for simple product
+16537,BLU-0121-68_in-Red,Missing or zero price for simple product
+16538,FXE-013-Orange-60M,Missing or zero price for simple product
+16539,BDI-0749-Vibrant_Orange,Missing or zero price for simple product
+16542,PTZ-0590-White-Size_2,Missing or zero price for simple product
+16543,BDI-0123-One_Size,Missing or zero price for simple product
+16544,LSP-0231-Black/Sulp-40,Missing or zero price for simple product
+16545,PTZ-0729-White,Missing or zero price for simple product
+16546,LSP-0219-Gry/Yel-40,Missing or zero price for simple product
+16547,LSP-0231-Black/Sulp-40.5,Missing or zero price for simple product
+16548,LSP-0230-Grey-37,Missing or zero price for simple product
+16549,LSP-0248-OceanFlame-44,Missing or zero price for simple product
+17412,LSP-0216,Too many connections
+17413,LSP-0217,Configurable product has no valid children
+17414,LSP-0218,Too many connections
+17415,LSP-0219,Too many connections
+17416,LSP-0220,Too many connections
+17417,LSP-0221,Too many connections
+17418,LSP-0222,Too many connections
+17419,LSP-0223,Too many connections
+17420,LSP-0224,Too many connections
+17421,LSP-0225,Too many connections
+17422,LSP-0226,Too many connections
+17423,LSP-0227,Too many connections
+17424,LSP-0228,Too many connections
+17425,LSP-0229,Too many connections
+17426,LSP-0230,Too many connections
+17427,LSP-0231,Too many connections
+17428,LSP-0232,Too many connections
+17429,LSP-0233,Too many connections
+17430,LSP-0234,Too many connections
+17431,LSP-0235,Configurable product has no valid children
+17432,LSP-0236,Too many connections
+17433,LSP-0237,Too many connections
+17434,LSP-0238,Too many connections
+17435,LSP-0239,Too many connections
+17436,LSP-0240,Too many connections
+17437,LSP-0241,Too many connections
+17438,LSP-0242,Too many connections
+17439,LSP-0243,Configurable product has no valid children
+17440,LSP-0244,Too many connections
+17441,LSP-0245,Too many connections
+17442,LSP-0246,Too many connections
+17443,LSP-0247,Too many connections
+17444,LSP-0248,Too many connections
+17445,LSP-0249,Too many connections
+17446,LSP-0250,Too many connections
+17447,LSP-0251,Too many connections
+17448,LSP-0252,Too many connections
+17449,LSP-0253,Configurable product has no valid children
+17450,TNY-0004,Too many connections
+17452,PTZ-0729-Blue,Missing or zero price for simple product
+17453,BDI-0958-12_cm,Missing or zero price for simple product
+17454,DMM-0248-30_cm,Missing or zero price for simple product
+17455,DMM-0412-12_cm,Missing or zero price for simple product
+17456,BDI-0073-BD_Orange-S/M,Missing or zero price for simple product
+17542,MET-0354-7_in,Missing or zero price for simple product
+17545,MET-0363-1_oz,Missing or zero price for simple product
+17546,BLU-0093-Royal_Blue,Missing or zero price for simple product
+17547,BLU-0121-24_in-Yellow,Missing or zero price for simple product
+17549,BDI-1000-Dual_Blue-60M,Missing or zero price for simple product
+17551,LSP-0164-Ice_Blue-M,Missing or zero price for simple product
+17552,ABC-0053-12_in,Missing or zero price for simple product
+17553,LSP-0164-Ice_Blue-S,Missing or zero price for simple product
+17554,MET-0354-5_in,Missing or zero price for simple product
+17555,EDR-0056-48_in,Missing or zero price for simple product
+17556,BDI-1000-Dual_Blue-70M,Missing or zero price for simple product
+17557,DMM-0248-240_cm,Missing or zero price for simple product
+17558,BDI-0750-Vibrant_Orange,Missing or zero price for simple product
+17559,BDI-0979-Matte_Blac,Missing or zero price for simple product
+17560,BDI-0958-18_cm_6pk,Missing or zero price for simple product
+17561,PTZ-0678-Size_1,Missing or zero price for simple product
+17562,MET-0399-25_cm,Missing or zero price for simple product
+17563,PTZ-0731,Missing or zero price for simple product
+17564,PTZ-0593-Size_2,Missing or zero price for simple product
+17566,DMM-0248-60_cm,Missing or zero price for simple product
+17567,STR-0134-Ice_Blue-60M,Missing or zero price for simple product
+17568,BLU-0092-Royal_Blue,Missing or zero price for simple product
+17584,BDI-0904-12_cm,Missing or zero price for simple product
+17585,DMM-0250-120_cm,Missing or zero price for simple product
+17586,DMM-0472-25_cm,Missing or zero price for simple product
+17587,PTZ-0676-Size_1,Missing or zero price for simple product
+17589,BDI-0710-Repo_Pink-S-M,Missing or zero price for simple product
+17590,DMM-0249-18_cm,Missing or zero price for simple product
+17591,DMM-0249-12_cm,Missing or zero price for simple product
+17592,BDI-0710-Repo_Blue-S-M,Missing or zero price for simple product
+17593,BEA-0101-Size_2,Missing or zero price for simple product
+17594,BDI-1043,Missing or zero price for simple product
+17595,MET-0415-10_ml,Missing or zero price for simple product
+17596,DMM-0412-18_cm,Missing or zero price for simple product
+17597,MET-0415-30_ml,Missing or zero price for simple product
+17598,BDI-0830-Vibrant_Or,Missing or zero price for simple product
+17599,DMM-0472-12_cm,Missing or zero price for simple product
+17600,DMM-0472-18_cm,Missing or zero price for simple product
+17602,DMM-0375-Gun_Metal,Missing or zero price for simple product
+17603,BLU-0139-36_in,Missing or zero price for simple product
+17604,DMM-0250-60_cm,Missing or zero price for simple product
+17605,STR-0162-M-Orange,Missing or zero price for simple product
+17607,DMM-0476-Gun_Metal,Missing or zero price for simple product
+17609,BDI-0830-Matte_Blac,Missing or zero price for simple product
+17610,PTZ-0689-Size_2,Missing or zero price for simple product
+17611,MET-0363-0.5_oz,Missing or zero price for simple product
+17612,BLU-0139-24_in,Missing or zero price for simple product
+17613,TRG-0140,Missing or zero price for simple product
+17615,BDI-0710-Repo_Green-S-M,Missing or zero price for simple product
+17616,BDI-0961-Ultra_Blue-M,Missing or zero price for simple product
+17618,CMP-0219-080_,Missing or zero price for simple product
+17620,BLU-0151,Missing or zero price for simple product
+17621,PTZ-0689-Size_1,Missing or zero price for simple product
+17622,BLU-0157,Missing or zero price for simple product
+17623,BLU-0155,Missing or zero price for simple product
+17624,BLU-0158,Missing or zero price for simple product
+17625,DMM-0181-18_cm-Red,Missing or zero price for simple product
+17631,BLU-0156,Missing or zero price for simple product
+17632,BLU-0164,Missing or zero price for simple product
+17633,DMM-0475-Gun_Metal,Missing or zero price for simple product
+17634,GRV-0195-60_cm,Missing or zero price for simple product
+17635,GRV-0195-120_cm,Missing or zero price for simple product
+17637,BLU-0163,Missing or zero price for simple product
+17638,TRG-0104-12_cm_6pk,Missing or zero price for simple product
+17639,BDI-0875-Fire_(Red)-M/L,Missing or zero price for simple product
+17640,BLU-0139-48_in,Missing or zero price for simple product
+17641,BLU-0024-Red-60M-Double_Dry,Missing or zero price for simple product
+17642,GRV-0092-20_cm-16_cm,Missing or zero price for simple product
+17643,RAB-0053-Dark_shark-XL,Missing or zero price for simple product
+17644,DMM-0181-25_cm-Red,Missing or zero price for simple product
+17649,BDI-1059,Too many connections
+17652,BLU-0145,Missing or zero price for simple product
+17653,PTZ-0590-Red-Size_2,Missing or zero price for simple product
+17662,BDI-1062,Too many connections
+17664,BLU-0165,Missing or zero price for simple product
+17667,BDI-1060,Too many connections
+17676,BDI-0961-Ultra_Blue-S,Missing or zero price for simple product
+17684,PTZ-0739,Too many connections
+17736,BLU-0153,Missing or zero price for simple product
+17737,BDI-0921-18_cm,Missing or zero price for simple product
+17748,DMM-0372-Green-12_cm,Missing or zero price for simple product
+17750,BLU-0154,Missing or zero price for simple product
+17751,BLU-0120-68_in-Brown,Missing or zero price for simple product
+17752,BLU-0149,Missing or zero price for simple product
+17753,PTZ-0678-Size_2,Missing or zero price for simple product
+17754,PTZ-0757,Too many connections
+17764,PTZ-0758,Too many connections
+17767,PTZ-0759,Too many connections
+17815,BLU-0110-6_in,Missing or zero price for simple product
+17816,BLU-0166,Missing or zero price for simple product
+17839,BLU-0167,Missing or zero price for simple product
+17840,BDI-0901-18_cm,Missing or zero price for simple product
+17841,BEA-0122-60_cm,Missing or zero price for simple product
+17845,GRV-0233-20_cm-10_cm,Missing or zero price for simple product
+17846,BLU-0150,Missing or zero price for simple product
+17850,BDI-0956-3pk,Missing or zero price for simple product
+17854,BLU-0159,Missing or zero price for simple product
+17857,BDI-1065,Configurable product has no valid children
+17862,BDI-1059-Gun_Metal-M,Missing or zero price for simple product
+17877,BDI-1001-Dual_Rd/Or-60M,Missing or zero price for simple product
+17878,PTZ-0644-Size_2,Missing or zero price for simple product
+17879,BEA-0100-Size_2,Missing or zero price for simple product
+17880,GRV-0246-Yellow,Missing or zero price for simple product
+17890,BDI-1072,Too many connections
+17901,BDI-1073,Too many connections
+17915,BDI-1075,Too many connections
+17936,BDI-1077,Too many connections
+17957,BLU-0148,Missing or zero price for simple product
+17958,BDI-1081,Too many connections
+17962,BDI-1082,Too many connections
+17966,"MET-0343-192""_(480cm)",Missing or zero price for simple product
+17972,CMP-0221-11_cm_5pk,Missing or zero price for simple product
+17976,BDI-1083,Too many connections
+17987,BDI-1084,Too many connections
+17999,BDI-1085,Too many connections
+18007,BDI-1087,Too many connections
+18013,PTZ-0709-60_cm,Missing or zero price for simple product
+18014,PTZ-0772-Black,Missing or zero price for simple product
+18015,BLU-0176-Red,Missing or zero price for simple product
+18016,TRG-0108-17_cm,Missing or zero price for simple product
+18017,PTZ-0772-Orange,Missing or zero price for simple product
+18018,BLU-0174-Red,Missing or zero price for simple product
+18025,PTZ-0771,Too many connections
+18028,BLU-0172-Yellow,Missing or zero price for simple product
+18029,BDI-0961-Ultra_Blue-L,Missing or zero price for simple product
+18030,PTZ-0590-Blue-Size_1,Missing or zero price for simple product
+18031,BDI-0917-Matte_Blac,Missing or zero price for simple product
+18032,BLU-0176-Royal_Blue,Missing or zero price for simple product
+18033,PTZ-0620-Raspberry_,Missing or zero price for simple product

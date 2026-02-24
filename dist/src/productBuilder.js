@@ -34,29 +34,32 @@ function imageUrl(path) {
 }
 function buildMetafields(product, variantAttributes) {
     const metafields = {};
+    // ---------------- STANDARD ATTRIBUTE EXPORT ----------------
     for (const key of Object.keys(product)) {
-        // Skip system fields
         if (SYSTEM_FIELDS.includes(key))
             continue;
-        // Skip variant attributes (size, color, etc.)
         if (variantAttributes.includes(key))
             continue;
-        // Skip internal Magento fields
         if (key.endsWith("_value"))
             continue;
         const value = product[key];
-        // Skip empty / null / undefined
         if (value === null ||
             value === undefined ||
             value === "" ||
             value === "no_selection")
             continue;
-        // Only allow primitive values
         if (typeof value === "string" ||
             typeof value === "number" ||
             typeof value === "boolean") {
             metafields[key] = String(value);
         }
+    }
+    // ---------------- FORCE IMAGE METAFIELDS ----------------
+    if (product.small_image && product.small_image !== "no_selection") {
+        metafields["small_image"] = imageUrl(product.small_image);
+    }
+    if (product.thumbnail && product.thumbnail !== "no_selection") {
+        metafields["thumbnail"] = imageUrl(product.thumbnail);
     }
     return metafields;
 }
@@ -81,10 +84,6 @@ async function buildRows(products, parentChildMap, categoryMap, mediaGalleryMap)
     for (const product of products) {
         counter++;
         try {
-            if (product.status !== 1) {
-                logProgress(counter, total, startTime);
-                continue;
-            }
             // ---------------- CONFIGURABLE ----------------
             if (product.type_id === "configurable") {
                 const childrenIds = parentChildMap.get(product.entity_id) || [];
@@ -98,13 +97,34 @@ async function buildRows(products, parentChildMap, categoryMap, mediaGalleryMap)
                 const metafields = buildMetafields(product, optionAttributes);
                 const handle = (0, slugify_1.default)(product.name, { lower: true });
                 const images = mediaGalleryMap.get(product.entity_id) || [];
-                const primaryImage = imageUrl(product.image) ||
-                    imageUrl(children[0]?.image);
+                let primaryImage = "";
+                if (product.image && product.image !== "no_selection") {
+                    primaryImage = imageUrl(product.image);
+                }
+                else if (children[0]?.image && children[0].image !== "no_selection") {
+                    primaryImage = imageUrl(children[0].image);
+                }
+                else if (product.small_image &&
+                    product.small_image !== "no_selection") {
+                    primaryImage = imageUrl(product.small_image);
+                }
+                else if (children[0] &&
+                    children[0].small_image &&
+                    children[0].small_image !== "no_selection") {
+                    primaryImage = imageUrl(children[0].small_image);
+                }
+                else if (images.length) {
+                    primaryImage = imageUrl(images[0]);
+                }
+                const categories = categoryMap.get(product.entity_id) || [];
                 const baseRow = {
                     Title: product.name,
                     Handle: handle,
                     "Body (HTML)": product.description,
-                    Tags: categoryMap.get(product.entity_id)?.join(", "),
+                    // Use first Magento category as main collection
+                    Collection: categories[0] || "",
+                    // Keep all categories as tags
+                    Tags: categories.join(", "),
                     "Image Src": primaryImage,
                 };
                 optionAttributes.forEach((attr, index) => {
@@ -117,14 +137,29 @@ async function buildRows(products, parentChildMap, categoryMap, mediaGalleryMap)
                     baseRow[column] = metafields[key];
                 }
                 children.forEach((child, index) => {
+                    const hasValidPrice = child.price !== undefined &&
+                        child.price !== null &&
+                        Number(child.price) > 0;
+                    if (!hasValidPrice) {
+                        failed.push({
+                            entity_id: child.entity_id,
+                            sku: child.sku,
+                            error: "Missing or zero price for variant",
+                        });
+                        return;
+                    }
                     const row = { ...baseRow };
                     optionAttributes.forEach((attr, i) => {
                         row[`Option${i + 1} Value`] =
                             child[`${attr}_value`] || child[attr];
                     });
                     row["Variant SKU"] = child.sku;
-                    row["Variant Price"] = child.price;
-                    row["Variant Compare At Price"] = child.special_price;
+                    row["Variant Price"] =
+                        child.price && Number(child.price) !== 0 ? child.price : "";
+                    row["Variant Compare At Price"] =
+                        child.special_price && Number(child.special_price) !== 0
+                            ? child.special_price
+                            : "";
                     row["Variant Weight (g)"] = child.weight;
                     if (index !== 0) {
                         delete row.Title;
@@ -148,16 +183,42 @@ async function buildRows(products, parentChildMap, categoryMap, mediaGalleryMap)
                 const handle = (0, slugify_1.default)(product.name, { lower: true });
                 const metafields = buildMetafields(product, []);
                 const images = mediaGalleryMap.get(product.entity_id) || [];
+                let primaryImage = "";
+                if (product.image && product.image !== "no_selection") {
+                    primaryImage = imageUrl(product.image);
+                }
+                else if (product.small_image &&
+                    product.small_image !== "no_selection") {
+                    primaryImage = imageUrl(product.small_image);
+                }
+                else if (images.length) {
+                    primaryImage = imageUrl(images[0]);
+                }
+                const hasValidPrice = product.price !== undefined &&
+                    product.price !== null &&
+                    Number(product.price) > 0;
+                if (!hasValidPrice) {
+                    failed.push({
+                        entity_id: product.entity_id,
+                        sku: product.sku,
+                        error: "Missing or zero price for simple product",
+                    });
+                    continue;
+                }
+                const categories = categoryMap.get(product.entity_id) || [];
                 const baseRow = {
                     Title: product.name,
                     Handle: handle,
                     "Body (HTML)": product.description,
                     "Variant SKU": product.sku,
-                    "Variant Price": product.price,
-                    "Variant Compare At Price": product.special_price,
+                    "Variant Price": product.price && Number(product.price) !== 0 ? product.price : "",
+                    "Variant Compare At Price": product.special_price && Number(product.special_price) !== 0
+                        ? product.special_price
+                        : "",
                     "Variant Weight (g)": product.weight,
-                    Tags: categoryMap.get(product.entity_id)?.join(", "),
-                    "Image Src": imageUrl(product.image),
+                    Collection: categories[0] || "",
+                    Tags: categories.join(", "),
+                    "Image Src": primaryImage,
                 };
                 for (const key of Object.keys(metafields)) {
                     const column = `${humanize(key)} (product.metafields.custom.${key})`;

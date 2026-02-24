@@ -10,7 +10,6 @@ async function loadProducts() {
     const [rows] = await conn.execute(`
     SELECT *
     FROM catalog_product_flat_1
-    WHERE status = 1
   `);
     return rows;
 }
@@ -56,14 +55,19 @@ async function loadMediaGallery() {
     const [rows] = await conn.execute(`
     SELECT
       mg.entity_id,
-      mg.value AS image_path
+      mg.value AS file_path,
+      mgv.position,
+      mgv.label,
+      mgv.disabled
     FROM catalog_product_entity_media_gallery mg
+    LEFT JOIN catalog_product_entity_media_gallery_value mgv
+      ON mg.value_id = mgv.value_id
   `);
     const map = new Map();
     rows.forEach((r) => {
         if (!map.has(r.entity_id))
             map.set(r.entity_id, []);
-        map.get(r.entity_id).push(r.image_path);
+        map.get(r.entity_id).push(r.file_path);
     });
     return map;
 }
