@@ -1,0 +1,75 @@
+import { db } from "./db";
+import { MagentoProduct } from "./types";
+
+export async function loadProducts(): Promise<MagentoProduct[]> {
+  const conn = await db();
+  const [rows] = await conn.execute(`
+    SELECT *
+    FROM catalog_product_flat_1
+    WHERE status = 1
+  `);
+  return rows as MagentoProduct[];
+}
+
+export async function loadParentChildMap() {
+  const conn = await db();
+  const [rows]: any = await conn.execute(`
+    SELECT parent_id, product_id
+    FROM catalog_product_super_link
+  `);
+
+  const map = new Map<number, number[]>();
+  rows.forEach((r: any) => {
+    if (!map.has(r.parent_id)) map.set(r.parent_id, []);
+    map.get(r.parent_id)!.push(r.product_id);
+  });
+
+  return map;
+}
+
+export async function loadCategoryMap() {
+  const conn = await db();
+
+  const [rows]: any = await conn.execute(`
+    SELECT ccp.product_id, ccev.value AS category_name
+    FROM catalog_category_product ccp
+    JOIN catalog_category_entity_varchar ccev
+      ON ccev.entity_id = ccp.category_id
+    WHERE ccev.attribute_id = (
+      SELECT attribute_id
+      FROM eav_attribute
+      WHERE attribute_code = 'name'
+      AND entity_type_id = 3
+      LIMIT 1
+    )
+  `);
+
+  const map = new Map<number, string[]>();
+
+  rows.forEach((r: any) => {
+    if (!map.has(r.product_id)) map.set(r.product_id, []);
+    map.get(r.product_id)!.push(r.category_name);
+  });
+
+  return map;
+}
+
+export async function loadMediaGallery() {
+  const conn = await db();
+
+  const [rows]: any = await conn.execute(`
+    SELECT
+      mg.entity_id,
+      mg.value AS image_path
+    FROM catalog_product_entity_media_gallery mg
+  `);
+
+  const map = new Map<number, string[]>();
+
+  rows.forEach((r: any) => {
+    if (!map.has(r.entity_id)) map.set(r.entity_id, []);
+    map.get(r.entity_id)!.push(r.image_path);
+  });
+
+  return map;
+}
