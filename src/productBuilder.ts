@@ -2,6 +2,7 @@ import slugify from "slugify";
 import { MagentoProduct, ShopifyRow } from "./types";
 import { loadVariantAttributes } from "./attributeLoader";
 import { CONFIG } from "./config";
+import { exportFailures } from "./errorReporter";
 
 const SYSTEM_FIELDS = [
   "entity_id",
@@ -70,6 +71,20 @@ function buildMetafields(
   return metafields;
 }
 
+function logProgress(current: number, total: number, startTime: number) {
+  const elapsedMs = Date.now() - startTime;
+  const percent = ((current / total) * 100).toFixed(1);
+  const elapsedSec = (elapsedMs / 1000).toFixed(1);
+
+  const rate = current / (elapsedMs / 1000);
+  const remaining = total - current;
+  const eta = rate > 0 ? (remaining / rate).toFixed(1) : "?";
+
+  process.stdout.write(
+    `\rProcessing ${current}/${total} (${percent}%) | ${elapsedSec}s | ETA ${eta}s`
+  );
+}
+
 export async function buildRows(
   products: MagentoProduct[],
   parentChildMap: Map<number, number[]>,
@@ -85,120 +100,146 @@ export async function buildRows(
   const rows: ShopifyRow[] = [];
   const metafieldColumns = new Set<string>();
 
+  const total = products.length;
+  const startTime = Date.now();
+  const failed: any[] = [];
+
+  let counter = 0;
+
   for (const product of products) {
+    counter++;
 
-    if (product.status !== 1) continue;
-
-    // ---------------- CONFIGURABLE ----------------
-    if (product.type_id === "configurable") {
-
-      const childrenIds = parentChildMap.get(product.entity_id) || [];
-      const children = childrenIds.map(id => productMap.get(id)!);
-
-      const optionAttributes = await loadVariantAttributes(product.entity_id);
-      const metafields = buildMetafields(product, optionAttributes);
-
-      const handle = slugify(product.name, { lower: true });
-
-      const images = mediaGalleryMap.get(product.entity_id) || [];
-      const primaryImage =
-        imageUrl(product.image) ||
-        imageUrl(children[0]?.image);
-
-      const baseRow: Record<string, unknown> = {
-        Title: product.name,
-        Handle: handle,
-        "Body (HTML)": product.description,
-        Tags: categoryMap.get(product.entity_id)?.join(", "),
-        "Image Src": primaryImage,
-      };
-
-      optionAttributes.forEach((attr: string, index: number) => {
-        baseRow[`Option${index + 1} Name`] = humanize(attr);
-      });
-
-      // --- ADD METAFIELDS TO FIRST ROW ---
-      for (const key of Object.keys(metafields)) {
-        const column =
-          `${humanize(key)} (product.metafields.custom.${key})`;
-        metafieldColumns.add(column);
-        baseRow[column] = metafields[key];
+    try {
+      if (product.status !== 1) {
+        logProgress(counter, total, startTime);
+        continue;
       }
 
-      children.forEach((child, index) => {
+      // ---------------- CONFIGURABLE ----------------
+      if (product.type_id === "configurable") {
+  
+        const childrenIds = parentChildMap.get(product.entity_id) || [];
+        const children = childrenIds
+          .map(id => productMap.get(id))
+          .filter(Boolean) as MagentoProduct[];
 
-        const row = { ...baseRow };
-
-        optionAttributes.forEach((attr: string, i: number) => {
-          row[`Option${i + 1} Value`] =
-            child[`${attr}_value`] || child[attr];
-        });
-
-        row["Variant SKU"] = child.sku;
-        row["Variant Price"] = child.price;
-        row["Variant Compare At Price"] = child.special_price;
-        row["Variant Weight (g)"] = child.weight;
-
-        if (index !== 0) {
-          delete row.Title;
-          delete row["Body (HTML)"];
-          delete row.Tags;
-          delete row["Image Src"];
-          optionAttributes.forEach((_: string, i: number) =>
-            delete row[`Option${i + 1} Name`]
-          );
+        if (!children.length) {
+          throw new Error("Configurable product has no valid children");
         }
-
-        rows.push(row);
-      });
-
-      // --- ADD ADDITIONAL IMAGE ROWS ---
-      images.slice(1).forEach(img => {
-        rows.push({
+  
+        const optionAttributes = await loadVariantAttributes(product.entity_id);
+        const metafields = buildMetafields(product, optionAttributes);
+  
+        const handle = slugify(product.name, { lower: true });
+  
+        const images = mediaGalleryMap.get(product.entity_id) || [];
+        const primaryImage =
+          imageUrl(product.image) ||
+          imageUrl(children[0]?.image);
+  
+        const baseRow: Record<string, unknown> = {
+          Title: product.name,
           Handle: handle,
-          "Image Src": imageUrl(img),
+          "Body (HTML)": product.description,
+          Tags: categoryMap.get(product.entity_id)?.join(", "),
+          "Image Src": primaryImage,
+        };
+  
+        optionAttributes.forEach((attr: string, index: number) => {
+          baseRow[`Option${index + 1} Name`] = humanize(attr);
         });
-      });
-    }
-
-    // ---------------- STANDALONE SIMPLE ----------------
-    if (product.type_id === "simple" && !childIds.has(product.entity_id)) {
-
-      const handle = slugify(product.name, { lower: true });
-
-      const metafields = buildMetafields(product, []);
-      const images = mediaGalleryMap.get(product.entity_id) || [];
-
-      const baseRow: any = {
-        Title: product.name,
-        Handle: handle,
-        "Body (HTML)": product.description,
-        "Variant SKU": product.sku,
-        "Variant Price": product.price,
-        "Variant Compare At Price": product.special_price,
-        "Variant Weight (g)": product.weight,
-        Tags: categoryMap.get(product.entity_id)?.join(", "),
-        "Image Src": imageUrl(product.image),
-      };
-
-      for (const key of Object.keys(metafields)) {
-        const column =
-          `${humanize(key)} (product.metafields.custom.${key})`;
-        metafieldColumns.add(column);
-        baseRow[column] = metafields[key];
+  
+        // --- ADD METAFIELDS TO FIRST ROW ---
+        for (const key of Object.keys(metafields)) {
+          const column =
+            `${humanize(key)} (product.metafields.custom.${key})`;
+          metafieldColumns.add(column);
+          baseRow[column] = metafields[key];
+        }
+  
+        children.forEach((child, index) => {
+  
+          const row = { ...baseRow };
+  
+          optionAttributes.forEach((attr: string, i: number) => {
+            row[`Option${i + 1} Value`] =
+              child[`${attr}_value`] || child[attr];
+          });
+  
+          row["Variant SKU"] = child.sku;
+          row["Variant Price"] = child.price;
+          row["Variant Compare At Price"] = child.special_price;
+          row["Variant Weight (g)"] = child.weight;
+  
+          if (index !== 0) {
+            delete row.Title;
+            delete row["Body (HTML)"];
+            delete row.Tags;
+            delete row["Image Src"];
+            optionAttributes.forEach((_: string, i: number) =>
+              delete row[`Option${i + 1} Name`]
+            );
+          }
+  
+          rows.push(row);
+        });
+  
+        // --- ADD ADDITIONAL IMAGE ROWS ---
+        images.slice(1).forEach(img => {
+          rows.push({
+            Handle: handle,
+            "Image Src": imageUrl(img),
+          });
+        });
       }
-
-      rows.push(baseRow);
-
-      images.slice(1).forEach(img => {
-        rows.push({
+  
+      // ---------------- STANDALONE SIMPLE ----------------
+      if (product.type_id === "simple" && !childIds.has(product.entity_id)) {
+  
+        const handle = slugify(product.name, { lower: true });
+  
+        const metafields = buildMetafields(product, []);
+        const images = mediaGalleryMap.get(product.entity_id) || [];
+  
+        const baseRow: any = {
+          Title: product.name,
           Handle: handle,
-          "Image Src": imageUrl(img),
+          "Body (HTML)": product.description,
+          "Variant SKU": product.sku,
+          "Variant Price": product.price,
+          "Variant Compare At Price": product.special_price,
+          "Variant Weight (g)": product.weight,
+          Tags: categoryMap.get(product.entity_id)?.join(", "),
+          "Image Src": imageUrl(product.image),
+        };
+  
+        for (const key of Object.keys(metafields)) {
+          const column =
+            `${humanize(key)} (product.metafields.custom.${key})`;
+          metafieldColumns.add(column);
+          baseRow[column] = metafields[key];
+        }
+  
+        rows.push(baseRow);
+  
+        images.slice(1).forEach(img => {
+          rows.push({
+            Handle: handle,
+            "Image Src": imageUrl(img),
+          });
         });
+      }      
+    } catch (error: any) {
+      failed.push({
+        entity_id: product.entity_id,
+        sku: product.sku,
+        error: error?.message || "Unknown error"
       });
     }
+    logProgress(counter, total, startTime);
   }
 
+  await exportFailures(failed);
   return rows;
 }
 
