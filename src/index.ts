@@ -2,6 +2,8 @@ import "dotenv/config";
 import { loadProducts, loadParentChildMap, loadCategoryMap, loadMediaGallery } from "./loader";
 import { buildRows } from "./productBuilder";
 import { writeCsv } from "./csvWriter";
+import { loadCustomers } from "./customerLoader";
+import { writeCustomersCsv } from "./customerCsvWriter";
 
 async function run() {
 
@@ -30,6 +32,14 @@ async function run() {
   await writeCsv(rows);
 
   console.log("CSV exported successfully");
+
+  // ----- CUSTOMER MIGRATION -----
+  console.log("Loading customers...");
+  const customers = await loadCustomers();
+
+  console.log(`Loaded ${customers.length} customers`);
+  await writeCustomersCsv(customers);
+  console.log("Customer CSV export complete");
 }
 
 run();

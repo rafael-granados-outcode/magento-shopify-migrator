@@ -4,6 +4,8 @@ require("dotenv/config");
 const loader_1 = require("./loader");
 const productBuilder_1 = require("./productBuilder");
 const csvWriter_1 = require("./csvWriter");
+const customerLoader_1 = require("./customerLoader");
+const customerCsvWriter_1 = require("./customerCsvWriter");
 async function run() {
     console.log("Loading products...");
     const products = await (0, loader_1.loadProducts)();
@@ -18,5 +20,11 @@ async function run() {
     console.log(`Generated ${rows.length} rows`);
     await (0, csvWriter_1.writeCsv)(rows);
     console.log("CSV exported successfully");
+    // ----- CUSTOMER MIGRATION -----
+    console.log("Loading customers...");
+    const customers = await (0, customerLoader_1.loadCustomers)();
+    console.log(`Loaded ${customers.length} customers`);
+    await (0, customerCsvWriter_1.writeCustomersCsv)(customers);
+    console.log("Customer CSV export complete");
 }
 run();
