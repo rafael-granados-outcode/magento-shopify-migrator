@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+require("dotenv/config");
 const loader_1 = require("./loader");
 const productBuilder_1 = require("./productBuilder");
 const csvWriter_1 = require("./csvWriter");

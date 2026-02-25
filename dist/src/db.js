@@ -34,12 +34,17 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.db = db;
+require("dotenv/config");
 const mysql = __importStar(require("mysql2/promise"));
 async function db() {
+    const host = process.env.DB_HOST ?? "localhost";
+    const user = process.env.DB_USER ?? "root";
+    const password = process.env.DB_PASSWORD ?? "";
+    const database = process.env.DB_NAME ?? "magento_local";
     return mysql.createConnection({
-        host: "localhost",
-        user: "root",
-        password: "Alejo1804*",
-        database: "magento_local",
+        host,
+        user,
+        password,
+        database,
     });
 }

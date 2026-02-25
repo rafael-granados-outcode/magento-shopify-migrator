@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { loadProducts, loadParentChildMap, loadCategoryMap, loadMediaGallery } from "./loader";
 import { buildRows } from "./productBuilder";
 import { writeCsv } from "./csvWriter";

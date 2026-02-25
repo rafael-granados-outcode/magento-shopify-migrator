@@ -1,1 +1,6 @@
 node_modules/
+
+# Local env files (never commit secrets)
+.env
+.env.*
+!.env.example
