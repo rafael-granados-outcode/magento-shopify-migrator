@@ -1,6 +1,6 @@
 node_modules/
 /node_modules/
-.csv
+*.csv
 # Local env files (never commit secrets)
 .env
 .env.*
