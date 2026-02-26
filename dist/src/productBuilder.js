@@ -72,6 +72,13 @@ function logProgress(current, total, startTime) {
     const eta = rate > 0 ? (remaining / rate).toFixed(1) : "?";
     process.stdout.write(`\rProcessing ${current}/${total} (${percent}%) | ${elapsedSec}s | ETA ${eta}s`);
 }
+function cleanHtml(value) {
+    if (!value)
+        return "";
+    return value
+        .replace(/\r?\n/g, " ") // remove line breaks only
+        .trim();
+}
 async function buildRows(products, parentChildMap, categoryMap, mediaGalleryMap) {
     const productMap = new Map(products.map(p => [p.entity_id, p]));
     const childIds = new Set(Array.from(parentChildMap.values()).flat());
@@ -120,7 +127,8 @@ async function buildRows(products, parentChildMap, categoryMap, mediaGalleryMap)
                 const baseRow = {
                     Title: product.name,
                     Handle: handle,
-                    "Body (HTML)": product.description,
+                    "Body (HTML)": cleanHtml(product.description ||
+                        product.short_description),
                     // Use first Magento category as main collection
                     Collection: categories[0] || "",
                     // Keep all categories as tags
@@ -209,7 +217,8 @@ async function buildRows(products, parentChildMap, categoryMap, mediaGalleryMap)
                 const baseRow = {
                     Title: product.name,
                     Handle: handle,
-                    "Body (HTML)": product.description,
+                    "Body (HTML)": cleanHtml(product.description ||
+                        product.short_description),
                     "Variant SKU": product.sku,
                     "Variant Price": product.price && Number(product.price) !== 0 ? product.price : "",
                     "Variant Compare At Price": product.special_price && Number(product.special_price) !== 0

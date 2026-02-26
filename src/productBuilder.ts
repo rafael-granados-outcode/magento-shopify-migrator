@@ -89,6 +89,13 @@ function logProgress(current: number, total: number, startTime: number) {
   );
 }
 
+function cleanHtml(value?: string): string {
+  if (!value) return "";
+  return value
+    .replace(/\r?\n/g, " ") // remove line breaks only
+    .trim();
+}
+
 export async function buildRows(
   products: MagentoProduct[],
   parentChildMap: Map<number, number[]>,
@@ -158,7 +165,10 @@ export async function buildRows(
         const baseRow: Record<string, unknown> = {
           Title: product.name,
           Handle: handle,
-          "Body (HTML)": product.description,
+          "Body (HTML)": cleanHtml(
+            (product.description as string) ||
+            (product.short_description as string)
+          ),
           // Use first Magento category as main collection
           Collection: categories[0] || "",
           // Keep all categories as tags
@@ -272,7 +282,10 @@ export async function buildRows(
         const baseRow: any = {
           Title: product.name,
           Handle: handle,
-          "Body (HTML)": product.description,
+          "Body (HTML)": cleanHtml(
+            (product.description as string) ||
+            (product.short_description as string)
+          ),
           "Variant SKU": product.sku,
           "Variant Price":
             product.price && Number(product.price) !== 0 ? product.price : "",
