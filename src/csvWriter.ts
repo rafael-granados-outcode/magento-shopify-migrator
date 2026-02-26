@@ -1,22 +1,34 @@
 import { createObjectCsvWriter } from "csv-writer";
 import { ShopifyRow } from "./types";
 
+function sanitizeValue(value: any): string {
+  if (value === null || value === undefined) return "";
+
+  return String(value)
+    .replace(/\r\n/g, " ")   // Windows newlines
+    .replace(/\n/g, " ")     // Unix newlines
+    .replace(/\r/g, " ")     // Old Mac newlines
+    .replace(/\t/g, " ")     // Tabs
+    .replace(/\u0000/g, "")  // Null chars
+    .trim();
+}
+
 function normalizeRows(rows: Record<string, any>[]) {
   const allKeys = new Set<string>();
 
-  // Collect all keys
   rows.forEach(row => {
     Object.keys(row).forEach(key => allKeys.add(key));
   });
 
   const keys = Array.from(allKeys);
 
-  // Ensure every row has all keys
   return rows.map(row => {
     const normalized: Record<string, any> = {};
+
     keys.forEach(key => {
-      normalized[key] = row[key] ?? "";
+      normalized[key] = sanitizeValue(row[key]);
     });
+
     return normalized;
   });
 }

@@ -2,18 +2,27 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.writeCsv = writeCsv;
 const csv_writer_1 = require("csv-writer");
+function sanitizeValue(value) {
+    if (value === null || value === undefined)
+        return "";
+    return String(value)
+        .replace(/\r\n/g, " ") // Windows newlines
+        .replace(/\n/g, " ") // Unix newlines
+        .replace(/\r/g, " ") // Old Mac newlines
+        .replace(/\t/g, " ") // Tabs
+        .replace(/\u0000/g, "") // Null chars
+        .trim();
+}
 function normalizeRows(rows) {
     const allKeys = new Set();
-    // Collect all keys
     rows.forEach(row => {
         Object.keys(row).forEach(key => allKeys.add(key));
     });
     const keys = Array.from(allKeys);
-    // Ensure every row has all keys
     return rows.map(row => {
         const normalized = {};
         keys.forEach(key => {
-            normalized[key] = row[key] ?? "";
+            normalized[key] = sanitizeValue(row[key]);
         });
         return normalized;
     });
