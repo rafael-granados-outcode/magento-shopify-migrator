@@ -1,54 +1,116 @@
 import "dotenv/config";
+
 import { loadProducts, loadParentChildMap, loadCategoryMap, loadMediaGallery } from "./loader";
 import { buildRows } from "./productBuilder";
 import { writeCsv } from "./csvWriter";
+
 import { loadCustomers } from "./customerLoader";
 import { writeCustomersCsv } from "./customerCsvWriter";
+
 import { migrateAllOrders } from "./migrateOrder";
 
-async function run() {
+import { exportMagentoOrders } from "./exporter/exportMagentoOrders";
 
-  // // ----- PRODUCT MIGRATION -----
-  // console.log("Loading products...");
-  // const products = await loadProducts();
+async function createProductsCsv() {
 
-  // console.log("Loading parent-child relationships...");
-  // const parentChildMap = await loadParentChildMap();
+  console.log("Loading products...");
+  const products = await loadProducts();
 
-  // console.log("Loading categories...");
-  // const categoryMap = await loadCategoryMap();
+  console.log("Loading parent-child relationships...");
+  const parentChildMap = await loadParentChildMap();
 
-  // console.log("Loading media gallery...");
-  // const mediaGalleryMap = await loadMediaGallery();
+  console.log("Loading categories...");
+  const categoryMap = await loadCategoryMap();
 
-  // console.log("Building Shopify rows...");
-  // const rows = await buildRows(
-  //   products,
-  //   parentChildMap,
-  //   categoryMap,
-  //   mediaGalleryMap
-  // );
+  console.log("Loading media gallery...");
+  const mediaGalleryMap = await loadMediaGallery();
 
-  // console.log(`Generated ${rows.length} rows`);
+  console.log("Building Shopify rows...");
+  const rows = await buildRows(
+    products,
+    parentChildMap,
+    categoryMap,
+    mediaGalleryMap
+  );
 
-  // await writeCsv(rows);
+  console.log(`Generated ${rows.length} rows`);
 
-  // console.log("CSV exported successfully");
+  await writeCsv(rows);
 
-  // // ----- CUSTOMER MIGRATION -----
-  // console.log("Loading customers...");
-  // const customers = await loadCustomers();
+  console.log("✅ Product CSV exported");
+}
 
-  // console.log(`Loaded ${customers.length} customers`);
-  // await writeCustomersCsv(customers);
-  // console.log("Customer CSV export complete");
+async function createCustomersCsv() {
 
-  // ----- ORDERS MIGRATION --------
+  console.log("Loading customers...");
+  const customers = await loadCustomers();
+
+  console.log(`Loaded ${customers.length} customers`);
+
+  await writeCustomersCsv(customers);
+
+  console.log("✅ Customer CSV exported");
+}
+
+async function migrateOrdersApi() {
+
   const limitEnv = process.env.MAGENTO_ORDER_LIMIT;
   const limit = limitEnv ? Number(limitEnv) : 100;
 
-  console.log(`Migrating up to ${limit} Magento orders...`);
+  console.log(`Migrating up to ${limit} Magento orders via Shopify API...`);
+
   await migrateAllOrders(limit);
+
+  console.log("✅ Order API migration complete");
+}
+
+async function createOrdersCsv() {
+
+  console.log("Exporting Magento orders for Matrixify...");
+
+  await exportMagentoOrders();
+
+  console.log("✅ Order CSV export complete");
+}
+
+async function run() {
+
+  const command = process.argv[2];
+
+  if (!command) {
+    console.log(`
+Usage:
+
+products      → Create Products CSV
+customers     → Create Customers CSV
+orders-api    → Bulk Order Migration via Shopify API
+orders-csv    → Create Orders CSV for Matrixify
+`);
+    process.exit(0);
+  }
+
+  switch (command) {
+
+    case "products":
+      await createProductsCsv();
+      break;
+
+    case "customers":
+      await createCustomersCsv();
+      break;
+
+    case "orders-api":
+      await migrateOrdersApi();
+      break;
+
+    case "orders-csv":
+      await createOrdersCsv();
+      break;
+
+    default:
+      console.log(`Unknown command: ${command}`);
+  }
+
 }
 
 run();
