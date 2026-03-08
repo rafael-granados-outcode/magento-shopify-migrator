@@ -4,42 +4,51 @@ import { buildRows } from "./productBuilder";
 import { writeCsv } from "./csvWriter";
 import { loadCustomers } from "./customerLoader";
 import { writeCustomersCsv } from "./customerCsvWriter";
+import { migrateAllOrders } from "./migrateOrder";
 
 async function run() {
 
-  console.log("Loading products...");
-  const products = await loadProducts();
+  // // ----- PRODUCT MIGRATION -----
+  // console.log("Loading products...");
+  // const products = await loadProducts();
 
-  console.log("Loading parent-child relationships...");
-  const parentChildMap = await loadParentChildMap();
+  // console.log("Loading parent-child relationships...");
+  // const parentChildMap = await loadParentChildMap();
 
-  console.log("Loading categories...");
-  const categoryMap = await loadCategoryMap();
+  // console.log("Loading categories...");
+  // const categoryMap = await loadCategoryMap();
 
-  console.log("Loading media gallery...");
-  const mediaGalleryMap = await loadMediaGallery();
+  // console.log("Loading media gallery...");
+  // const mediaGalleryMap = await loadMediaGallery();
 
-  console.log("Building Shopify rows...");
-  const rows = await buildRows(
-    products,
-    parentChildMap,
-    categoryMap,
-    mediaGalleryMap
-  );
+  // console.log("Building Shopify rows...");
+  // const rows = await buildRows(
+  //   products,
+  //   parentChildMap,
+  //   categoryMap,
+  //   mediaGalleryMap
+  // );
 
-  console.log(`Generated ${rows.length} rows`);
+  // console.log(`Generated ${rows.length} rows`);
 
-  await writeCsv(rows);
+  // await writeCsv(rows);
 
-  console.log("CSV exported successfully");
+  // console.log("CSV exported successfully");
 
-  // ----- CUSTOMER MIGRATION -----
-  console.log("Loading customers...");
-  const customers = await loadCustomers();
+  // // ----- CUSTOMER MIGRATION -----
+  // console.log("Loading customers...");
+  // const customers = await loadCustomers();
 
-  console.log(`Loaded ${customers.length} customers`);
-  await writeCustomersCsv(customers);
-  console.log("Customer CSV export complete");
+  // console.log(`Loaded ${customers.length} customers`);
+  // await writeCustomersCsv(customers);
+  // console.log("Customer CSV export complete");
+
+  // ----- ORDERS MIGRATION --------
+  const limitEnv = process.env.MAGENTO_ORDER_LIMIT;
+  const limit = limitEnv ? Number(limitEnv) : 100;
+
+  console.log(`Migrating up to ${limit} Magento orders...`);
+  await migrateAllOrders(limit);
 }
 
 run();
