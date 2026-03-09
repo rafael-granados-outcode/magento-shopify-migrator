@@ -8,6 +8,8 @@ const customerLoader_1 = require("./customerLoader");
 const customerCsvWriter_1 = require("./customerCsvWriter");
 const migrateOrder_1 = require("./migrateOrder");
 const exportMagentoOrders_1 = require("./exporter/exportMagentoOrders");
+const redirectBuilder_1 = require("./redirectBuilder");
+const redirectCsvWriter_1 = require("./redirectCsvWriter");
 async function createProductsCsv() {
     console.log("Loading products...");
     const products = await (0, loader_1.loadProducts)();
@@ -42,6 +44,13 @@ async function createOrdersCsv() {
     await (0, exportMagentoOrders_1.exportMagentoOrders)();
     console.log("✅ Order CSV export complete");
 }
+async function createRedirectsCsv() {
+    console.log("Loading products...");
+    const products = await (0, loader_1.loadProducts)();
+    const redirects = (0, redirectBuilder_1.buildRedirects)(products);
+    await (0, redirectCsvWriter_1.writeRedirectCsv)(redirects);
+    console.log("Redirect CSV export complete");
+}
 async function run() {
     const command = process.argv[2];
     if (!command) {
@@ -58,6 +67,9 @@ orders-csv    → Create Orders CSV for Matrixify
     switch (command) {
         case "products":
             await createProductsCsv();
+            break;
+        case "redirects":
+            await createRedirectsCsv();
             break;
         case "customers":
             await createCustomersCsv();

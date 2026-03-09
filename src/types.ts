@@ -83,3 +83,9 @@ export interface ShopifyAddress {
   zip: string
   phone?: string
 }
+
+export type RedirectRow = {
+  Command: "NEW";
+  Path: string;
+  Target: string;
+};

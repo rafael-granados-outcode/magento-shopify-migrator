@@ -11,6 +11,9 @@ import { migrateAllOrders } from "./migrateOrder";
 
 import { exportMagentoOrders } from "./exporter/exportMagentoOrders";
 
+import { buildRedirects } from "./redirectBuilder";
+import { writeRedirectCsv } from "./redirectCsvWriter";
+
 async function createProductsCsv() {
 
   console.log("Loading products...");
@@ -73,6 +76,19 @@ async function createOrdersCsv() {
   console.log("✅ Order CSV export complete");
 }
 
+async function createRedirectsCsv() {
+
+  console.log("Loading products...");
+
+  const products = await loadProducts();
+
+  const redirects = buildRedirects(products);
+
+  await writeRedirectCsv(redirects);
+
+  console.log("Redirect CSV export complete");
+}
+
 async function run() {
 
   const command = process.argv[2];
@@ -93,6 +109,10 @@ orders-csv    → Create Orders CSV for Matrixify
 
     case "products":
       await createProductsCsv();
+      break;
+
+    case "redirects":
+      await createRedirectsCsv();
       break;
 
     case "customers":

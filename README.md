@@ -1,6 +1,6 @@
-# Magento → Shopify Migration Tool
+# Magento 1.x → Shopify Migration Tool
 
-A Node.js toolkit for migrating **Products, Customers, and Orders** from
+A Node.js toolkit for migrating **Products, Customers, Redirects, and Orders** from
 **Magento** to **Shopify**.
 
 The tool supports two order migration strategies:
@@ -67,6 +67,7 @@ Available commands:
   Command        Description
   -------------- --------------------------------------
   `products`     Generate Shopify Products CSV
+  `redirects`    Generate Shopify Products Redirections CSV
   `customers`    Generate Shopify Customers CSV
   `orders-api`   Migrate orders via Shopify Admin API
   `orders-csv`   Export Magento orders for Matrixify
@@ -153,6 +154,17 @@ Upload the ZIP files directly into **Matrixify**.
 
 Each batch contains **10,000 orders** to comply with Matrixify import
 limits.
+
+------------------------------------------------------------------------
+
+# Product redirections CSV for matrixify
+
+
+``` bash
+npm run migrate redirects
+```
+
+Output: redirects.csv
 
 ------------------------------------------------------------------------
 
