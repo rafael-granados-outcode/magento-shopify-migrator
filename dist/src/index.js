@@ -19,8 +19,15 @@ async function createProductsCsv() {
     const categoryMap = await (0, loader_1.loadCategoryMap)();
     console.log("Loading media gallery...");
     const mediaGalleryMap = await (0, loader_1.loadMediaGallery)();
+    console.log("Loading bundle selections...");
+    const bundleSelections = await (0, loader_1.loadBundleSelections)();
+    console.log(`Loaded ${bundleSelections.size} bundle selections`);
+    console.log("Loading bundle options...");
+    const bundleOptions = await (0, loader_1.loadBundleOptions)();
+    console.log(`Loaded ${bundleOptions.size} bundle options`);
+    const bundleChildMap = await (0, loader_1.loadBundleChildMap)();
     console.log("Building Shopify rows...");
-    const rows = await (0, productBuilder_1.buildRows)(products, parentChildMap, categoryMap, mediaGalleryMap);
+    const rows = await (0, productBuilder_1.buildRows)(products, parentChildMap, categoryMap, mediaGalleryMap, bundleSelections, bundleOptions, bundleChildMap);
     console.log(`Generated ${rows.length} rows`);
     await (0, csvWriter_1.writeCsv)(rows);
     console.log("✅ Product CSV exported");

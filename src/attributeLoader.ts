@@ -1,6 +1,6 @@
 import { db } from "./db";
 
-export async function loadVariantAttributes(productId: number) {
+export async function loadVariantAttributes(productId: number): Promise<string[]> {
   const conn = await db();
 
   try {

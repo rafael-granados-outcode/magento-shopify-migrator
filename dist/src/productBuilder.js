@@ -8,167 +8,150 @@ const slugify_1 = __importDefault(require("slugify"));
 const attributeLoader_1 = require("./attributeLoader");
 const config_1 = require("./config");
 const errorReporter_1 = require("./errorReporter");
-const SYSTEM_FIELDS = [
-    "entity_id",
-    "type_id",
-    "sku",
-    "name",
-    "price",
-    "special_price",
-    "weight",
-    "image",
-    "description",
-    "short_description",
-    "visibility",
-    "status",
-];
-function humanize(str) {
-    return str
-        .replace(/_/g, " ")
-        .replace(/\b\w/g, l => l.toUpperCase());
-}
+// ---------------- HELPERS ----------------
 function imageUrl(path) {
     if (!path || path === "no_selection")
         return "";
     return `${config_1.CONFIG.mediaBaseUrl}${path}`;
 }
-function buildMetafields(product, variantAttributes) {
+function cleanHtml(value) {
+    if (!value)
+        return "";
+    return value.replace(/\r?\n/g, " ").trim();
+}
+function humanize(str) {
+    return str.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+}
+function buildMetafields(product) {
     const metafields = {};
-    // ---------------- STANDARD ATTRIBUTE EXPORT ----------------
     for (const key of Object.keys(product)) {
-        if (SYSTEM_FIELDS.includes(key))
-            continue;
-        if (variantAttributes.includes(key))
-            continue;
-        if (key.endsWith("_value"))
-            continue;
         const value = product[key];
         if (value === null ||
             value === undefined ||
             value === "" ||
             value === "no_selection")
             continue;
-        if (typeof value === "string" ||
-            typeof value === "number" ||
-            typeof value === "boolean") {
+        if (typeof value === "string" || typeof value === "number") {
             metafields[key] = String(value);
         }
     }
-    // ---------------- FORCE IMAGE METAFIELDS ----------------
-    if (product.small_image && product.small_image !== "no_selection") {
-        metafields["small_image"] = imageUrl(product.small_image);
-    }
-    if (product.thumbnail && product.thumbnail !== "no_selection") {
-        metafields["thumbnail"] = imageUrl(product.thumbnail);
-    }
     return metafields;
 }
-function logProgress(current, total, startTime) {
-    const elapsedMs = Date.now() - startTime;
-    const percent = ((current / total) * 100).toFixed(1);
-    const elapsedSec = (elapsedMs / 1000).toFixed(1);
-    const rate = current / (elapsedMs / 1000);
-    const remaining = total - current;
-    const eta = rate > 0 ? (remaining / rate).toFixed(1) : "?";
-    process.stdout.write(`\rProcessing ${current}/${total} (${percent}%) | ${elapsedSec}s | ETA ${eta}s`);
-}
-function cleanHtml(value) {
+// 🔥 Clean option value (fix "Product Name - Color")
+function cleanOptionValue(value, fallback) {
     if (!value)
-        return "";
-    return value
-        .replace(/\r?\n/g, " ") // remove line breaks only
-        .trim();
+        return fallback || "";
+    // Remove product name prefix pattern
+    if (value.includes(" - ")) {
+        return value.split(" - ").pop().trim();
+    }
+    return value.trim();
 }
-async function buildRows(products, parentChildMap, categoryMap, mediaGalleryMap) {
+// 🔥 Avoid duplicate failures
+const failedSet = new Set();
+function pushFailure(failed, entity_id, sku, error) {
+    const key = `${entity_id}-${error}`;
+    if (!failedSet.has(key)) {
+        failed.push({ entity_id, sku, error });
+        failedSet.add(key);
+    }
+}
+// 🔥 Smart bundle pricing (FIXES TRG-0105)
+function resolveBundlePrice(child, sel, product, allSelections, productMap) {
+    let price = Number(child?.price || 0);
+    // 1. child price
+    if (price > 0)
+        return price;
+    // 2. fixed price
+    if (sel.selection_price_type == 0) {
+        price = Number(sel.selection_price_value || 0);
+        if (price > 0)
+            return price;
+    }
+    // 3. percent
+    if (sel.selection_price_type == 1) {
+        const percent = Number(sel.selection_price_value || 0);
+        const base = Number(product.price || 0);
+        if (base > 0) {
+            price = (base * percent) / 100;
+            if (price > 0)
+                return price;
+        }
+    }
+    // 4. 🔥 fallback → ANY child with price
+    const fallback = allSelections
+        .map(s => productMap.get(s.product_id))
+        .find(c => c && Number(c.price) > 0);
+    if (fallback)
+        return Number(fallback.price);
+    // 5. last fallback
+    return 1;
+}
+// ---------------- MAIN ----------------
+async function buildRows(products, parentChildMap, categoryMap, mediaGalleryMap, bundleSelections, bundleOptions, bundleChildMap) {
     const productMap = new Map(products.map(p => [p.entity_id, p]));
     const childIds = new Set(Array.from(parentChildMap.values()).flat());
     const rows = [];
-    const metafieldColumns = new Set();
-    const total = products.length;
-    const startTime = Date.now();
     const failed = [];
-    let counter = 0;
     for (const product of products) {
-        counter++;
         try {
-            // ---------------- CONFIGURABLE ----------------
+            const handle = (0, slugify_1.default)(product.name || product.sku, { lower: true });
+            const images = mediaGalleryMap.get(product.entity_id) || [];
+            let primaryImage = imageUrl(product.image);
+            if (!primaryImage && images.length) {
+                primaryImage = imageUrl(images[0]);
+            }
+            const categories = categoryMap.get(product.entity_id) || [];
+            const metafields = buildMetafields(product);
+            const baseRow = {
+                Title: product.name,
+                Handle: handle,
+                "Body (HTML)": cleanHtml(product.description),
+                Collection: categories[0] || "",
+                Tags: categories.join(", "),
+                "Image Src": primaryImage,
+            };
+            const initialRowCount = rows.length;
+            // =========================
+            // CONFIGURABLE
+            // =========================
             if (product.type_id === "configurable") {
                 const childrenIds = parentChildMap.get(product.entity_id) || [];
                 const children = childrenIds
                     .map(id => productMap.get(id))
                     .filter(Boolean);
+                // 🔥 fallback → treat as simple
                 if (!children.length) {
-                    throw new Error("Configurable product has no valid children");
+                    const price = Number(product.price || 0);
+                    if (price <= 0) {
+                        pushFailure(failed, product.entity_id, product.sku, "Configurable without children has no valid price");
+                    }
+                    else {
+                        rows.push({
+                            ...baseRow,
+                            "Variant SKU": product.sku,
+                            "Variant Price": price.toFixed(2),
+                        });
+                    }
+                    continue;
                 }
                 const optionAttributes = await (0, attributeLoader_1.loadVariantAttributes)(product.entity_id);
-                const metafields = buildMetafields(product, optionAttributes);
-                const handle = (0, slugify_1.default)(product.name, { lower: true });
-                const images = mediaGalleryMap.get(product.entity_id) || [];
-                let primaryImage = "";
-                if (product.image && product.image !== "no_selection") {
-                    primaryImage = imageUrl(product.image);
-                }
-                else if (children[0]?.image && children[0].image !== "no_selection") {
-                    primaryImage = imageUrl(children[0].image);
-                }
-                else if (product.small_image &&
-                    product.small_image !== "no_selection") {
-                    primaryImage = imageUrl(product.small_image);
-                }
-                else if (children[0] &&
-                    children[0].small_image &&
-                    children[0].small_image !== "no_selection") {
-                    primaryImage = imageUrl(children[0].small_image);
-                }
-                else if (images.length) {
-                    primaryImage = imageUrl(images[0]);
-                }
-                const categories = categoryMap.get(product.entity_id) || [];
-                const baseRow = {
-                    Title: product.name,
-                    Handle: handle,
-                    "Body (HTML)": cleanHtml(product.description ||
-                        product.short_description),
-                    // Use first Magento category as main collection
-                    Collection: categories[0] || "",
-                    // Keep all categories as tags
-                    Tags: categories.join(", "),
-                    "Image Src": primaryImage,
-                };
-                optionAttributes.forEach((attr, index) => {
-                    baseRow[`Option${index + 1} Name`] = humanize(attr);
+                optionAttributes.forEach((attr, i) => {
+                    baseRow[`Option${i + 1} Name`] = humanize(attr);
                 });
-                // --- ADD METAFIELDS TO FIRST ROW ---
-                for (const key of Object.keys(metafields)) {
-                    const column = `${humanize(key)} (product.metafields.custom.${key})`;
-                    metafieldColumns.add(column);
-                    baseRow[column] = metafields[key];
-                }
                 children.forEach((child, index) => {
-                    const hasValidPrice = child.price !== undefined &&
-                        child.price !== null &&
-                        Number(child.price) > 0;
-                    if (!hasValidPrice) {
-                        failed.push({
-                            entity_id: child.entity_id,
-                            sku: child.sku,
-                            error: "Missing or zero price for variant",
-                        });
+                    const price = Number(child.price || 0);
+                    if (price <= 0) {
+                        pushFailure(failed, product.entity_id, product.sku, "Variant has no valid price");
                         return;
                     }
                     const row = { ...baseRow };
                     optionAttributes.forEach((attr, i) => {
                         row[`Option${i + 1} Value`] =
-                            child[`${attr}_value`] || child[attr];
+                            child[`${attr}_value`] || child[attr] || "";
                     });
                     row["Variant SKU"] = child.sku;
-                    row["Variant Price"] =
-                        child.price && Number(child.price) !== 0 ? child.price : "";
-                    row["Variant Compare At Price"] =
-                        child.special_price && Number(child.special_price) !== 0
-                            ? child.special_price
-                            : "";
-                    row["Variant Weight (g)"] = child.weight;
+                    row["Variant Price"] = price.toFixed(2);
                     if (index !== 0) {
                         delete row.Title;
                         delete row["Body (HTML)"];
@@ -176,81 +159,179 @@ async function buildRows(products, parentChildMap, categoryMap, mediaGalleryMap)
                         delete row["Image Src"];
                         optionAttributes.forEach((_, i) => delete row[`Option${i + 1} Name`]);
                     }
+                    else {
+                        Object.keys(metafields).forEach(key => {
+                            row[`${humanize(key)} (product.metafields.custom.${key})`] = metafields[key];
+                        });
+                    }
                     rows.push(row);
                 });
-                // --- ADD ADDITIONAL IMAGE ROWS ---
-                images.slice(1).forEach(img => {
-                    rows.push({
-                        Handle: handle,
-                        "Image Src": imageUrl(img),
-                    });
-                });
             }
-            // ---------------- STANDALONE SIMPLE ----------------
-            if (product.type_id === "simple" && !childIds.has(product.entity_id)) {
-                const handle = (0, slugify_1.default)(product.name, { lower: true });
-                const metafields = buildMetafields(product, []);
-                const images = mediaGalleryMap.get(product.entity_id) || [];
-                let primaryImage = "";
-                if (product.image && product.image !== "no_selection") {
-                    primaryImage = imageUrl(product.image);
-                }
-                else if (product.small_image &&
-                    product.small_image !== "no_selection") {
-                    primaryImage = imageUrl(product.small_image);
-                }
-                else if (images.length) {
-                    primaryImage = imageUrl(images[0]);
-                }
-                const hasValidPrice = product.price !== undefined &&
-                    product.price !== null &&
-                    Number(product.price) > 0;
-                if (!hasValidPrice) {
-                    failed.push({
-                        entity_id: product.entity_id,
-                        sku: product.sku,
-                        error: "Missing or zero price for simple product",
+            // =========================
+            // BUNDLE
+            // =========================
+            if (product.type_id === "bundle") {
+                const selections = bundleSelections.get(product.entity_id) || [];
+                if (!selections.length) {
+                    pushFailure(failed, product.entity_id, product.sku, "Bundle without selections");
+                    rows.push({
+                        ...baseRow,
+                        "Variant SKU": product.sku,
+                        "Variant Price": "1.00",
                     });
                     continue;
                 }
-                const categories = categoryMap.get(product.entity_id) || [];
-                const baseRow = {
-                    Title: product.name,
-                    Handle: handle,
-                    "Body (HTML)": cleanHtml(product.description ||
-                        product.short_description),
-                    "Variant SKU": product.sku,
-                    "Variant Price": product.price && Number(product.price) !== 0 ? product.price : "",
-                    "Variant Compare At Price": product.special_price && Number(product.special_price) !== 0
-                        ? product.special_price
-                        : "",
-                    "Variant Weight (g)": product.weight,
-                    Collection: categories[0] || "",
-                    Tags: categories.join(", "),
-                    "Image Src": primaryImage,
-                };
-                for (const key of Object.keys(metafields)) {
-                    const column = `${humanize(key)} (product.metafields.custom.${key})`;
-                    metafieldColumns.add(column);
-                    baseRow[column] = metafields[key];
-                }
-                rows.push(baseRow);
-                images.slice(1).forEach(img => {
-                    rows.push({
-                        Handle: handle,
-                        "Image Src": imageUrl(img),
-                    });
+                const optionGroups = new Map();
+                selections.forEach(sel => {
+                    if (!optionGroups.has(sel.option_id)) {
+                        optionGroups.set(sel.option_id, []);
+                    }
+                    const group = optionGroups.get(sel.option_id);
+                    if (!group.find(g => g.product_id === sel.product_id)) {
+                        group.push(sel);
+                    }
                 });
+                const optionIds = Array.from(optionGroups.keys());
+                if (optionIds.length === 1) {
+                    const optionId = optionIds[0];
+                    const group = optionGroups.get(optionId);
+                    baseRow["Option1 Name"] =
+                        group[0]?.option_label ||
+                            bundleOptions.get(optionId) ||
+                            "Option";
+                    group.forEach((sel, index) => {
+                        const child = bundleChildMap.get(sel.product_id) ||
+                            productMap.get(sel.product_id);
+                        const price = resolveBundlePrice(child, sel, product, selections, productMap);
+                        const row = { ...baseRow };
+                        row["Option1 Value"] = cleanOptionValue(sel.value_label || child?.name, child?.sku);
+                        row["Variant SKU"] = child?.sku || product.sku;
+                        row["Variant Price"] = price.toFixed(2);
+                        if (index !== 0) {
+                            delete row.Title;
+                            delete row["Body (HTML)"];
+                            delete row.Tags;
+                            delete row["Image Src"];
+                            delete row["Option1 Name"];
+                        }
+                        else {
+                            Object.keys(metafields).forEach(key => {
+                                row[`${humanize(key)} (product.metafields.custom.${key})`] = metafields[key];
+                            });
+                        }
+                        rows.push(row);
+                    });
+                }
+                else {
+                    // =========================
+                    // MULTI OPTION BUNDLES
+                    // =========================
+                    // Option names
+                    optionIds.forEach((optionId, i) => {
+                        const group = optionGroups.get(optionId);
+                        baseRow[`Option${i + 1} Name`] =
+                            group[0]?.option_label ||
+                                bundleOptions.get(optionId) ||
+                                `Option ${i + 1}`;
+                    });
+                    // Build cartesian combinations
+                    function buildCombinations(groups, depth = 0, current = []) {
+                        if (depth >= groups.length) {
+                            return [current];
+                        }
+                        let results = [];
+                        groups[depth].forEach(sel => {
+                            results = results.concat(buildCombinations(groups, depth + 1, [...current, sel]));
+                        });
+                        return results;
+                    }
+                    const groupArray = optionIds.map(id => optionGroups.get(id));
+                    const combinations = buildCombinations(groupArray);
+                    const processed = new Set();
+                    combinations.forEach((combo, index) => {
+                        const row = { ...baseRow };
+                        let variantSku = "";
+                        let variantPrice = 0;
+                        combo.forEach((sel, i) => {
+                            const child = bundleChildMap.get(sel.product_id) ||
+                                productMap.get(sel.product_id);
+                            if (!child)
+                                return;
+                            // 🔥 IMPORTANT
+                            // use LAST child sku as canonical variant sku
+                            variantSku = child.sku;
+                            row[`Option${i + 1} Value`] =
+                                cleanOptionValue(sel.value_label || child.name, child.sku);
+                            if (variantPrice <= 0) {
+                                variantPrice = resolveBundlePrice(child, sel, product, selections, productMap);
+                            }
+                        });
+                        // skip invalid
+                        if (!variantSku)
+                            return;
+                        // dedupe REAL sku
+                        if (processed.has(variantSku))
+                            return;
+                        processed.add(variantSku);
+                        row["Variant SKU"] = variantSku;
+                        row["Variant Price"] = variantPrice.toFixed(2);
+                        if (index !== 0) {
+                            delete row.Title;
+                            delete row["Body (HTML)"];
+                            delete row.Tags;
+                            delete row["Image Src"];
+                            optionIds.forEach((_, i) => {
+                                delete row[`Option${i + 1} Name`];
+                            });
+                        }
+                        else {
+                            Object.keys(metafields).forEach(key => {
+                                row[`${humanize(key)} (product.metafields.custom.${key})`] = metafields[key];
+                            });
+                        }
+                        rows.push(row);
+                    });
+                }
             }
+            // =========================
+            // SIMPLE
+            // =========================
+            if (product.type_id === "simple" &&
+                !childIds.has(product.entity_id)) {
+                const price = Number(product.price || 0);
+                if (price <= 0) {
+                    pushFailure(failed, product.entity_id, product.sku, "Simple product has no valid price");
+                }
+                else {
+                    const row = {
+                        ...baseRow,
+                        "Variant SKU": product.sku,
+                        "Variant Price": price.toFixed(2),
+                    };
+                    Object.keys(metafields).forEach(key => {
+                        row[`${humanize(key)} (product.metafields.custom.${key})`] = metafields[key];
+                    });
+                    rows.push(row);
+                }
+            }
+            // 🔥 FINAL SAFETY NET (NO PRODUCT LEFT BEHIND)
+            // if (rows.length === initialRowCount) {
+            //   pushFailure(
+            //     failed,
+            //     product.entity_id,
+            //     product.sku,
+            //     "No rows generated → forced fallback"
+            //   );
+            //   rows.push({
+            //     ...baseRow,
+            //     "Variant SKU": product.sku,
+            //     "Variant Price": "1.00",
+            //   });
+            // }
         }
-        catch (error) {
-            failed.push({
-                entity_id: product.entity_id,
-                sku: product.sku,
-                error: error?.message || "Unknown error"
-            });
+        catch (err) {
+            pushFailure(failed, product.entity_id, product.sku, err.message || "Unknown error");
         }
-        logProgress(counter, total, startTime);
     }
     await (0, errorReporter_1.exportFailures)(failed);
     return rows;

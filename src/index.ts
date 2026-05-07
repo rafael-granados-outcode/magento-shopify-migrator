@@ -1,6 +1,14 @@
 import "dotenv/config";
 
-import { loadProducts, loadParentChildMap, loadCategoryMap, loadMediaGallery } from "./loader";
+import { 
+  loadProducts, 
+  loadParentChildMap, 
+  loadCategoryMap, 
+  loadMediaGallery,
+  loadBundleSelections,
+  loadBundleOptions,
+  loadBundleChildMap
+} from "./loader";
 import { buildRows } from "./productBuilder";
 import { writeCsv } from "./csvWriter";
 
@@ -28,12 +36,25 @@ async function createProductsCsv() {
   console.log("Loading media gallery...");
   const mediaGalleryMap = await loadMediaGallery();
 
+  console.log("Loading bundle selections...");
+  const bundleSelections = await loadBundleSelections();
+  console.log(`Loaded ${bundleSelections.size} bundle selections`);
+
+  console.log("Loading bundle options...");
+  const bundleOptions = await loadBundleOptions();
+  console.log(`Loaded ${bundleOptions.size} bundle options`);
+
+  const bundleChildMap = await loadBundleChildMap();
+
   console.log("Building Shopify rows...");
   const rows = await buildRows(
     products,
     parentChildMap,
     categoryMap,
-    mediaGalleryMap
+    mediaGalleryMap,
+    bundleSelections,
+    bundleOptions,
+    bundleChildMap
   );
 
   console.log(`Generated ${rows.length} rows`);
