@@ -33,30 +33,79 @@ async function loadProducts() {
 // ---------------- PARENT-CHILD MAP ----------------
 async function loadParentChildMap() {
     const conn = await (0, db_1.db)();
-    let rows = [];
-    // CONFIGURABLE
+    const map = new Map();
+    // =========================
+    // CONFIGURABLE PRODUCTS
+    // =========================
     const [configurableRows] = await conn.execute(`
-    SELECT parent_id, product_id
-    FROM catalog_product_super_link
+    SELECT DISTINCT
+      parent.entity_id AS parent_id,
+      child.entity_id AS child_id
+
+    FROM catalog_product_super_link cpsl
+
+    INNER JOIN catalog_product_entity parent
+      ON parent.entity_id = cpsl.parent_id
+
+    INNER JOIN catalog_product_entity child
+      ON child.entity_id = cpsl.product_id
+
+    INNER JOIN catalog_product_flat_1 parent_flat
+      ON parent_flat.entity_id = parent.entity_id
+
+    INNER JOIN catalog_product_flat_1 child_flat
+      ON child_flat.entity_id = child.entity_id
+
+    WHERE parent_flat.type_id = 'configurable'
+      AND child_flat.type_id = 'simple'
   `);
-    rows = rows.concat(configurableRows || []);
-    // BUNDLE
+    configurableRows.forEach((r) => {
+        if (!map.has(r.parent_id)) {
+            map.set(r.parent_id, []);
+        }
+        const children = map.get(r.parent_id);
+        if (!children.includes(r.child_id)) {
+            children.push(r.child_id);
+        }
+    });
+    // =========================
+    // BUNDLE PRODUCTS
+    // =========================
     try {
         const [bundleRows] = await conn.execute(`
-      SELECT parent_product_id AS parent_id, product_id
-      FROM catalog_product_bundle_selection
+      SELECT DISTINCT
+        parent.entity_id AS parent_id,
+        child.entity_id AS child_id
+
+      FROM catalog_product_bundle_selection cpbs
+
+      INNER JOIN catalog_product_entity parent
+        ON parent.entity_id = cpbs.parent_product_id
+
+      INNER JOIN catalog_product_entity child
+        ON child.entity_id = cpbs.product_id
+
+      INNER JOIN catalog_product_flat_1 parent_flat
+        ON parent_flat.entity_id = parent.entity_id
+
+      INNER JOIN catalog_product_flat_1 child_flat
+        ON child_flat.entity_id = child.entity_id
+
+      WHERE parent_flat.type_id = 'bundle'
     `);
-        rows = rows.concat(bundleRows || []);
+        bundleRows.forEach((r) => {
+            if (!map.has(r.parent_id)) {
+                map.set(r.parent_id, []);
+            }
+            const children = map.get(r.parent_id);
+            if (!children.includes(r.child_id)) {
+                children.push(r.child_id);
+            }
+        });
     }
     catch {
-        // ignore if table doesn't exist
+        // ignore if bundle tables do not exist
     }
-    const map = new Map();
-    rows.forEach((r) => {
-        if (!map.has(r.parent_id))
-            map.set(r.parent_id, []);
-        map.get(r.parent_id).push(r.product_id);
-    });
     await conn.end();
     return map;
 }
@@ -161,7 +210,6 @@ async function loadBundleSelections() {
   `);
     const map = new Map();
     rows.forEach((r) => {
-        // 🔥 build clean value label
         let value_label = "";
         if (r.color_label && r.size_label) {
             value_label = `${r.color_label} / ${r.size_label}`;

@@ -28,38 +28,96 @@ export async function loadProducts(): Promise<MagentoProduct[]> {
 
 // ---------------- PARENT-CHILD MAP ----------------
 export async function loadParentChildMap() {
+
   const conn = await db();
-
-  let rows: any[] = [];
-
-  // CONFIGURABLE
-  const [configurableRows]: any = await conn.execute(`
-    SELECT parent_id, product_id
-    FROM catalog_product_super_link
-  `);
-
-  rows = rows.concat(configurableRows || []);
-
-  // BUNDLE
-  try {
-    const [bundleRows]: any = await conn.execute(`
-      SELECT parent_product_id AS parent_id, product_id
-      FROM catalog_product_bundle_selection
-    `);
-
-    rows = rows.concat(bundleRows || []);
-  } catch {
-    // ignore if table doesn't exist
-  }
 
   const map = new Map<number, number[]>();
 
-  rows.forEach((r: any) => {
-    if (!map.has(r.parent_id)) map.set(r.parent_id, []);
-    map.get(r.parent_id)!.push(r.product_id);
+  // =========================
+  // CONFIGURABLE PRODUCTS
+  // =========================
+  const [configurableRows]: any = await conn.execute(`
+    SELECT DISTINCT
+      parent.entity_id AS parent_id,
+      child.entity_id AS child_id
+
+    FROM catalog_product_super_link cpsl
+
+    INNER JOIN catalog_product_entity parent
+      ON parent.entity_id = cpsl.parent_id
+
+    INNER JOIN catalog_product_entity child
+      ON child.entity_id = cpsl.product_id
+
+    INNER JOIN catalog_product_flat_1 parent_flat
+      ON parent_flat.entity_id = parent.entity_id
+
+    INNER JOIN catalog_product_flat_1 child_flat
+      ON child_flat.entity_id = child.entity_id
+
+    WHERE parent_flat.type_id = 'configurable'
+      AND child_flat.type_id = 'simple'
+  `);
+
+  configurableRows.forEach((r: any) => {
+
+    if (!map.has(r.parent_id)) {
+      map.set(r.parent_id, []);
+    }
+
+    const children = map.get(r.parent_id)!;
+
+    if (!children.includes(r.child_id)) {
+      children.push(r.child_id);
+    }
   });
 
+  // =========================
+  // BUNDLE PRODUCTS
+  // =========================
+  try {
+
+    const [bundleRows]: any = await conn.execute(`
+      SELECT DISTINCT
+        parent.entity_id AS parent_id,
+        child.entity_id AS child_id
+
+      FROM catalog_product_bundle_selection cpbs
+
+      INNER JOIN catalog_product_entity parent
+        ON parent.entity_id = cpbs.parent_product_id
+
+      INNER JOIN catalog_product_entity child
+        ON child.entity_id = cpbs.product_id
+
+      INNER JOIN catalog_product_flat_1 parent_flat
+        ON parent_flat.entity_id = parent.entity_id
+
+      INNER JOIN catalog_product_flat_1 child_flat
+        ON child_flat.entity_id = child.entity_id
+
+      WHERE parent_flat.type_id = 'bundle'
+    `);
+
+    bundleRows.forEach((r: any) => {
+
+      if (!map.has(r.parent_id)) {
+        map.set(r.parent_id, []);
+      }
+
+      const children = map.get(r.parent_id)!;
+
+      if (!children.includes(r.child_id)) {
+        children.push(r.child_id);
+      }
+    });
+
+  } catch {
+    // ignore if bundle tables do not exist
+  }
+
   await conn.end();
+
   return map;
 }
 
@@ -176,7 +234,6 @@ export async function loadBundleSelections() {
 
   rows.forEach((r: any) => {
 
-    // 🔥 build clean value label
     let value_label = "";
 
     if (r.color_label && r.size_label) {
