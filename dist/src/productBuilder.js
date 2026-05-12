@@ -42,6 +42,10 @@ function buildMetafields(product) {
         "length",
         "length_value",
         "msrp",
+        "image",
+        "small_image",
+        "thumbnail",
+        "media_gallery"
     ]);
     for (const key of Object.keys(product)) {
         if (excluded.has(key.toLowerCase())) {
@@ -230,9 +234,7 @@ async function buildRows(products, parentChildMap, categoryMap, mediaGalleryMap,
                 "Variant Fulfillment Service": "manual",
                 "Variant Requires Shipping": "TRUE",
                 "Variant Taxable": "TRUE",
-                "Variant Weight Unit": "lb",
-                "Variant Grams": "",
-                "Variant Weight": "",
+                "Variant Weight Unit": "g",
                 "Variant Barcode": "",
                 "Variant Compare At Price": "",
                 "Cost per item": "",
@@ -282,59 +284,79 @@ async function buildRows(products, parentChildMap, categoryMap, mediaGalleryMap,
                         return;
                     }
                     const row = { ...baseRow };
+                    const skuParts = child.sku
+                        ?.split("-")
+                        .filter(Boolean) || [];
+                    // last SKU part normally size
+                    const lastPart = skuParts[skuParts.length - 1] || "";
+                    // second-last normally color
+                    const secondLastPart = skuParts[skuParts.length - 2] || "";
+                    const sizeMap = {
+                        XS: "Extra Small",
+                        S: "Small",
+                        SM: "Small",
+                        M: "Medium",
+                        MD: "Medium",
+                        L: "Large",
+                        LG: "Large",
+                        XL: "Extra Large",
+                        XXL: "2XL",
+                    };
                     optionAttributes.forEach((attr, i) => {
+                        const attrLower = attr.toLowerCase();
                         const rawValue = child[`${attr}_value`] ||
                             child[attr] ||
                             "";
                         let optionValue = cleanOptionValue(String(rawValue), child.sku, product.name);
-                        // =========================
-                        // FALLBACKS FOR EMPTY VALUES
-                        // =========================
-                        if (!optionValue) {
-                            const skuParts = child.sku
-                                ?.split("-")
-                                .filter(Boolean) || [];
-                            // COLOR FALLBACK
-                            if (isColorOption(attr)) {
-                                // Example:
-                                // CMP-0363-Blue-L
-                                // -> Blue
-                                if (skuParts.length >= 2) {
-                                    optionValue =
-                                        skuParts[skuParts.length - 2];
-                                }
-                            }
-                            // SIZE FALLBACK
-                            if (!optionValue &&
-                                attr.toLowerCase().includes("size")) {
-                                // Example:
-                                // CMP-0363-Blue-L
-                                // -> L
-                                if (skuParts.length >= 1) {
-                                    const rawSize = skuParts[skuParts.length - 1];
-                                    const sizeMap = {
-                                        XS: "Extra Small",
-                                        S: "Small",
-                                        SM: "Small",
-                                        M: "Medium",
-                                        MD: "Medium",
-                                        L: "Large",
-                                        LG: "Large",
-                                        XL: "Extra Large",
-                                        XXL: "2XL",
-                                    };
-                                    optionValue =
-                                        sizeMap[rawSize.toUpperCase()] ||
-                                            rawSize;
-                                }
-                            }
+                        // =====================================
+                        // DETECT BROKEN MAGENTO VALUES
+                        // =====================================
+                        const isBrokenSelect = attrLower === "select";
+                        const isNumericColor = /^\d+$/.test(optionValue);
+                        const repeatedBadValue = optionValue === "White/Midgray";
+                        // =====================================
+                        // SIZE
+                        // =====================================
+                        if (attrLower.includes("size") ||
+                            (isBrokenSelect &&
+                                (/^[0-9.]+$/.test(lastPart) ||
+                                    sizeMap[lastPart.toUpperCase()]))) {
+                            baseRow[`Option${i + 1} Name`] = "Size";
+                            optionValue =
+                                sizeMap[lastPart.toUpperCase()] ||
+                                    lastPart;
                         }
+                        // =====================================
+                        // COLOR
+                        // =====================================
+                        else if (isColorOption(attr) ||
+                            isBrokenSelect ||
+                            isNumericColor ||
+                            repeatedBadValue) {
+                            baseRow[`Option${i + 1} Name`] = "Color";
+                            // avoid numeric garbage like 0086
+                            if (secondLastPart &&
+                                !/^\d+$/.test(secondLastPart)) {
+                                optionValue = secondLastPart
+                                    .replace(/_/g, " ")
+                                    .trim();
+                            }
+                            // if still numeric/broken, fallback
+                            if (!optionValue ||
+                                /^\d+$/.test(optionValue)) {
+                                optionValue = "Default";
+                            }
+                            row[`Option${i + 1} Linked To`] =
+                                "product.metafields.custom.color-pattern";
+                        }
+                        // =====================================
+                        // FINAL CLEANUP
+                        // =====================================
+                        optionValue = String(optionValue || "")
+                            .replace(/\s+/g, " ")
+                            .trim();
                         row[`Option${i + 1} Value`] =
                             optionValue || "Default";
-                        if (isColorOption(attr)) {
-                            row[`Option${i + 1} Linked To`] =
-                                "product.metafields.shopify.color-pattern";
-                        }
                     });
                     // =========================
                     // REMOVE EMPTY OPTIONS
@@ -350,6 +372,8 @@ async function buildRows(products, parentChildMap, categoryMap, mediaGalleryMap,
                     });
                     row["Variant SKU"] = child.sku;
                     row["Variant Price"] = price.toFixed(2);
+                    row["Variant Grams"] = child.weight || product.weight || "";
+                    row["Variant Weight"] = child.weight || product.weight || "";
                     const childImages = mediaGalleryMap.get(child.entity_id) || [];
                     const variantImage = imageUrl(child.image) ||
                         (childImages.length
@@ -443,6 +467,7 @@ async function buildRows(products, parentChildMap, categoryMap, mediaGalleryMap,
                     const row = { ...baseRow };
                     let variantSku = "";
                     let variantPrice = 0;
+                    let variantWeight = "";
                     combo.forEach((sel, i) => {
                         const child = bundleChildMap.get(sel.product_id) ||
                             productMap.get(sel.product_id);
@@ -454,7 +479,7 @@ async function buildRows(products, parentChildMap, categoryMap, mediaGalleryMap,
                         const optionName = baseRow[`Option${i + 1} Name`];
                         if (isColorOption(optionName)) {
                             row[`Option${i + 1} Linked To`] =
-                                "product.metafields.shopify.color-pattern";
+                                "product.metafields.custom.color-pattern";
                         }
                         const childImages = mediaGalleryMap.get(child.entity_id) || [];
                         const variantImage = imageUrl(child.image) ||
@@ -464,6 +489,7 @@ async function buildRows(products, parentChildMap, categoryMap, mediaGalleryMap,
                         if (variantImage) {
                             row["Variant Image"] = variantImage;
                         }
+                        variantWeight = child.weight || product.weight || "";
                         if (variantPrice <= 0) {
                             variantPrice = resolveBundlePrice(child, sel, product, selections, productMap);
                         }
@@ -476,6 +502,8 @@ async function buildRows(products, parentChildMap, categoryMap, mediaGalleryMap,
                     row["Variant SKU"] = variantSku;
                     row["Variant Price"] =
                         variantPrice.toFixed(2);
+                    row["Variant Grams"] = variantWeight;
+                    row["Variant Weight"] = variantWeight;
                     if (index !== 0) {
                         delete row.Title;
                         delete row["Body (HTML)"];
@@ -516,6 +544,8 @@ async function buildRows(products, parentChildMap, categoryMap, mediaGalleryMap,
                         "Variant Price": price.toFixed(2),
                         "Option1 Name": "Title",
                         "Option1 Value": "Default Title",
+                        "Variant Grams": product.weight || "",
+                        "Variant Weight": product.weight || "",
                     };
                     Object.keys(metafields).forEach(key => {
                         row[`${humanize(key)} (product.metafields.custom.${key})`] = metafields[key];

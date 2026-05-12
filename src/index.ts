@@ -26,6 +26,7 @@ async function createProductsCsv() {
 
   console.log("Loading products...");
   const products = await loadProducts();
+  console.log(`Loaded ${products.length} products from Magento`);
 
   console.log("Loading parent-child relationships...");
   const parentChildMap = await loadParentChildMap();

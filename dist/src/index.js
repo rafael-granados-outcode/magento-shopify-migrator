@@ -13,6 +13,7 @@ const redirectCsvWriter_1 = require("./redirectCsvWriter");
 async function createProductsCsv() {
     console.log("Loading products...");
     const products = await (0, loader_1.loadProducts)();
+    console.log(`Loaded ${products.length} products from Magento`);
     console.log("Loading parent-child relationships...");
     const parentChildMap = await (0, loader_1.loadParentChildMap)();
     console.log("Loading categories...");
